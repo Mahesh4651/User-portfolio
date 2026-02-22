@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  # ─────────────────────────────────────────────────────
+  # Portfolio Web App
+  # ─────────────────────────────────────────────────────
+  portfolio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: portfolio_app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:80"          # Access at http://localhost:3000
+    environment:
+      - NODE_ENV=production
+    labels:
+      - "com.portfolio.description=Alex Carter Portfolio"
+      - "com.portfolio.version=1.0.0"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - portfolio_net
+
+  # ─────────────────────────────────────────────────────
+  # (Optional) Reverse Proxy — Uncomment for production
+  # ─────────────────────────────────────────────────────
+  # proxy:
+  #   image: traefik:v2.10
+  #   container_name: traefik
+  #   command:
+  #     - "--providers.docker=true"
+  #     - "--entrypoints.web.address=:80"
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   networks:
+  #     - portfolio_net
+
+networks:
+  portfolio_net:
+    driver: bridge
+
+volumes: {}
